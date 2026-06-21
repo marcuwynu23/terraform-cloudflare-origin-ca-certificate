@@ -102,6 +102,37 @@ terraform destroy
 | `origin_certificate` | The PEM-encoded Origin CA certificate |
 | `private_key`        | The PEM-encoded private key (RSA)     |
 
+---
+
+## Usage as a Module
+
+Reference this repository as a Terraform module in your own configurations:
+
+```hcl
+module "origin_ca" {
+  source = "github.com/marcuwynu23/terraform-cloudflare-origin-ca-certificate?ref=main"
+
+  cloudflare_api_token = var.cloudflare_api_token
+  zone_id              = var.zone_id
+  hostnames            = ["example.com", "*.example.com"]
+  request_type         = "origin-rsa"
+  requested_validity   = 5475
+}
+```
+
+Then use the outputs in your configuration:
+
+```hcl
+# Example: reference the certificate in a notification
+output "certificate_arn" {
+  value = module.origin_ca.origin_certificate
+}
+```
+
+All variables and outputs documented below are available when using this as a module.
+
+---
+
 ## How It Works
 
 1. **Private Key** — A 2048-bit RSA key is generated using the `tls_private_key` resource.
