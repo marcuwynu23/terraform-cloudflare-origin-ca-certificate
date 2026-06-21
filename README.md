@@ -102,8 +102,6 @@ terraform destroy
 | `origin_certificate` | The PEM-encoded Origin CA certificate |
 | `private_key`        | The PEM-encoded private key (RSA)     |
 
----
-
 ## Usage as a Module
 
 Reference this repository as a Terraform module in your own configurations:
@@ -130,8 +128,6 @@ output "certificate_arn" {
 ```
 
 All variables and outputs documented below are available when using this as a module.
-
----
 
 ## How It Works
 
