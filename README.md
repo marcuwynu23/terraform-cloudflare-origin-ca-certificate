@@ -106,17 +106,32 @@ terraform destroy
 
 Reference this repository as a Terraform module in your own configurations:
 
-```hcl
-module "origin_ca" {
-  source = "github.com/marcuwynu23/terraform-cloudflare-origin-ca-certificate?ref=main"
-
-  cloudflare_api_token = var.cloudflare_api_token
-  zone_id              = var.zone_id
-  hostnames            = ["example.com", "*.example.com"]
-  request_type         = "origin-rsa"
-  requested_validity   = 5475
-}
-```
+> **Option 1**: Terraform Registry (recommended)
+> ```hcl
+> module "origin-ca-certificate" {
+>   source  = "marcuwynu23/origin-ca-certificate/cloudflare"
+>   version = "1.0.0"
+>
+>   cloudflare_api_token = var.cloudflare_api_token
+>   zone_id              = var.zone_id
+>   hostnames            = ["example.com", "*.example.com"]
+>   request_type         = "origin-rsa"
+>   requested_validity   = 5475
+> }
+> ```
+>
+> **Option 2**: GitHub source
+> ```hcl
+> module "origin-ca-certificate" {
+>   source = "github.com/marcuwynu23/terraform-cloudflare-origin-ca-certificate?ref=main"
+>
+>   cloudflare_api_token = var.cloudflare_api_token
+>   zone_id              = var.zone_id
+>   hostnames            = ["example.com", "*.example.com"]
+>   request_type         = "origin-rsa"
+>   requested_validity   = 5475
+> }
+> ```
 
 Then use the outputs in your configuration:
 
