@@ -1,0 +1,63 @@
+name: CD - Cloudflare Origin CA Certificate (Apply / Destroy)
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: Terraform operation
+        required: true
+        type: choice
+        options:
+          - apply
+          - destroy
+        default: apply
+      zone_id:
+        description: Cloudflare Zone ID
+        required: true
+        type: string
+      hostnames:
+        description: Hostnames as HCL list, e.g. ["example.com", "*.example.com"]
+        required: true
+        type: string
+        default: '["example.com", "*.example.com"]'
+      request_type:
+        description: Certificate type (origin-rsa or origin-ecc)
+        required: true
+        type: string
+        default: origin-rsa
+      requested_validity:
+        description: Certificate validity in days (max 5475)
+        required: true
+        type: number
+        default: 5475
+
+env:
+  TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+  provision:
+    name: Terraform ${{ github.event.inputs.command }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+      - name: Terraform Init
+        run: terraform init
+      - name: Terraform Plan
+        run: |
+          terraform plan ${{ github.event.inputs.command == 'destroy' && '-destroy' || '' }} \
+            -var="zone_id=${{ github.event.inputs.zone_id }}" \
+            -var="hostnames=${{ github.event.inputs.hostnames }}" \
+            -var="request_type=${{ github.event.inputs.request_type }}" \
+            -var="requested_validity=${{ github.event.inputs.requested_validity }}"
+      - name: Terraform Apply / Destroy
+        run: |
+          terraform ${{ github.event.inputs.command }} -auto-approve \
+            -var="zone_id=${{ github.event.inputs.zone_id }}" \
+            -var="hostnames=${{ github.event.inputs.hostnames }}" \
+            -var="request_type=${{ github.event.inputs.request_type }}" \
+            -var="requested_validity=${{ github.event.inputs.requested_validity }}"
