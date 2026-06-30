@@ -173,6 +173,15 @@ server {
 }
 ```
 
+## Resources Created
+
+- `tls_private_key.origin_ca` – RSA private key for the origin certificate
+- `tls_cert_request.origin_ca` – Certificate Signing Request (CSR)
+- `cloudflare_origin_ca_certificate.this` – Cloudflare Origin CA certificate
+- `cloudflare_zone_setting.ssl` – SSL setting set to Full (Strict)
+- `local_file.origin_cert` – Local PEM file for the certificate
+- `local_file.private_key` – Local PEM file for the private key
+
 ## Security Notes
 
 - `terraform.tfvars` and `*.tfstate` files are gitignored — never commit secrets
@@ -189,3 +198,52 @@ server {
 ## License
 
 MIT
+## CI/CD Setup (GitHub Actions)
+
+### Prerequisites
+1. **Create a GCS bucket** for Terraform remote state:
+    ```bash
+    gcloud storage buckets create gs://your-terraform-state-bucket \
+      --location=us-central1 \
+      --uniform-bucket-level-access
+    ```
+
+2. **Create a service account** with necessary permissions and generate a JSON key:
+    - GCP Console → IAM & Admin → Service Accounts → Create Service Account
+    - Grant the required roles for this module
+    - Keys → Add Key → Create New Key → JSON
+    - Copy the entire JSON file contents
+
+3. **Add GitHub secrets**:
+
+    | Secret Name | Value |
+    |---|---|
+    | `GCP_SA_KEY` | Full JSON key from step 2 |
+    | `TF_BUCKET_NAME` | Your GCS bucket name |
+    | `TF_BUCKET_PREFIX` | Bucket prefix/path (e.g., `cloudflare-origin-ca-certificate`) |
+
+4. **Run the workflow**:
+    - **Apply**: Go to Actions → **CD - Cloudflare Origin CA Certificate (Apply)** → fill in all inputs
+    - **Destroy**: Go to Actions → **CD - Cloudflare Origin CA Certificate (Destroy)** → fill in essential inputs
+
+> Alternatively, create a `backend.tfvars` from `backend.tfvars.example` and run `terraform init -backend-config="backend.tfvars"` for local use.
+
+## Remote State (GCS Backend)
+
+This module uses Google Cloud Storage (GCS) as the Terraform backend for remote state management:
+
+```hcl
+terraform {
+  backend "gcs" {
+    bucket = "your-terraform-state-bucket"
+    prefix = "cloudflare-origin-ca-certificate"
+  }
+}
+```
+
+Create a `backend.tfvars` file based on `backend.tfvars.example` and initialize:
+
+```bash
+terraform init -backend-config="backend.tfvars"
+```
+
